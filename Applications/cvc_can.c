@@ -28,15 +28,11 @@ typedef struct queue_msg_s
 CAN_HandleTypeDef		CanHandle;
 CAN_TxHeaderTypeDef		TxHeader;
 CAN_RxHeaderTypeDef		RxHeader;
-uint8_t					TxData[8];
-uint8_t					RxData[8];
 uint32_t 				TxMailbox;
 
 static CAN_msg_t		demo_message;	// CAN message received through demo
-
-static QueueHandle_t RxQueue = NULL;
-static QueueHandle_t TxQueue = NULL;
-//static QueueHandle_t testQueue = NULL;
+static uint32_t			Rx_msg_count;
+static uint32_t			Tx_msg_count;
 
 /* Private Function Prototypes ---------------------------------------------------------------*/
 static void CAN_Config(void);
@@ -52,25 +48,23 @@ void CAN_Demo_Task(void * parameters)
 
 	while (1)
 	{
-		/* Delay task for 1 seconds */
-		vTaskDelay((TickType_t) 1000/portTICK_PERIOD_MS);
 
-		/* Build CAN message */
-		Tx_msg.Tx_header = TxHeader;
-		Tx_msg.data._8[0] = LED_send;
-		Tx_msg.data._8[1] = 0xAD;
+		#ifdef SENDER_
+			/* Delay task */
+			vTaskDelay((TickType_t) 1000/CAN_Tx_FREQ/portTICK_PERIOD_MS);
 
-		/* Add CAN message to TxQueue */
-		xQueueSend(TxQueue, &Tx_msg, 0U);
+			/* Build CAN message */
+			Tx_msg.Tx_header = TxHeader;
+			Tx_msg.data._8[0] = LED_send;
+			Tx_msg.data._8[1] = 0xAD;
 
-		/* Increment LED_send */
-		LED_send = (LED_send % 3)+1;
+			/* Add CAN message to TxQueue */
+			xQueueSend(TxQueue, &Tx_msg, 0U);
 
-		/* send to test queue */
-		//xQueueSend(testQueue, &LED_send, 0U);
+			/* Increment LED_send */
+			LED_send = (LED_send % 3)+1;
 
-		/* Read received data from data table and turn on corresponding LED */
-		LED_Display(demo_message.data._8[0]);
+		#endif /* SENDER_ */
 	}
 
 }
@@ -82,20 +76,20 @@ void CAN_Demo_Task(void * parameters)
 void CAN_Rx_Task(void * parameters)
 {
 	queue_msg_t Rx_msg;
+	Rx_msg_count = 0U;
 
 	while(1)
 	{
-		/* Read all messages from queue and store in data table */
-		//while (uxQueueMessagesWaiting(RxQueue) > 0)
-		//{
-			/* get message from queue */
-			xQueueReceive( RxQueue, &Rx_msg, portMAX_DELAY );
+		/* get message from queue */
+		xQueueReceive( RxQueue, &Rx_msg, portMAX_DELAY );
 
-			/* store message in data table */
-			demo_message.data = Rx_msg.data;
-			demo_message.msg_ID = Rx_msg.Rx_header.StdId;
-			demo_message.msg_type = Rx_msg.Rx_header.IDE;
-		//}
+		/* store message in data table */
+		demo_message.data = Rx_msg.data;
+		demo_message.msg_ID = Rx_msg.Rx_header.StdId;
+		demo_message.msg_type = Rx_msg.Rx_header.IDE;
+
+		/* Increment Rx count */
+		Rx_msg_count++;
 	}
 }
 
@@ -105,25 +99,17 @@ void CAN_Rx_Task(void * parameters)
 void CAN_Tx_Task(void * parameters)
 {
 	queue_msg_t Tx_msg;
+	Tx_msg_count = 0U;
+
 	while(1)
 	{
-		/* Read all messages from queue and send to bus */
-		//while (uxQueueMessagesWaiting(TxQueue) > 0)
-		//{
-			/* get message from test queue */
-			uint8_t LED_receive;
-			//xQueueReceive(testQueue, &LED_receive, portMAX_DELAY);
-			//LED_Display(LED_receive);
+		/* get message from queue */
+		xQueueReceive( TxQueue, &Tx_msg, portMAX_DELAY );
 
-			/* get message from queue */
-			xQueueReceive( TxQueue, &Tx_msg, portMAX_DELAY );
-
-			if (HAL_CAN_AddTxMessage(&CanHandle, &Tx_msg.Tx_header, Tx_msg.data._8, &TxMailbox) != HAL_OK)
-			{
-				/* Transmission request error */
-			}
-
-		//}
+		if (HAL_CAN_AddTxMessage(&CanHandle, &Tx_msg.Tx_header, Tx_msg.data._8, &TxMailbox) == HAL_OK)
+		{
+			/* Transmission request error */
+		} else Tx_msg_count++;	/* increment Tx count */
 	}
 }
 
@@ -149,8 +135,6 @@ void CAN_Init(void)
 	{
 		Error_Handler();
 	}
-
-	//testQueue = xQueueCreate(1U, sizeof(uint8_t));
 
 }
 

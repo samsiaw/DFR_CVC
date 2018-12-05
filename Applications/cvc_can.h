@@ -37,6 +37,10 @@
 #define CAN_Rx_QUEUE_LENGTH			100U
 #define CAN_Tx_QUEUE_LENGTH			100U
 
+/* Definition for CAN Limit Testing */
+#define SENDER_
+#define CAN_Tx_FREQ					100U	/* Frequency (Hz) of Tx messages */
+
 /* Type Definitions ------------------------------------------------------------------------*/
 typedef struct bamocar_data_16_s
 {
@@ -68,7 +72,11 @@ typedef struct CAN_msg_s
 
 } CAN_msg_t;
 
-/* Function Prototypes ------------------------------------------------------------------------*/
+/* Public Variables ------------------------------------------------------------------------*/
+QueueHandle_t RxQueue = NULL;	/* CAN Rx Message Queue */
+QueueHandle_t TxQueue = NULL;	/* CAN Tx Message Queue */
+
+/* Public Function Prototypes ------------------------------------------------------------------------*/
 void CAN_Init(void)	;
 HAL_StatusTypeDef CAN_Polling(void);
 void Error_Handler(void);
