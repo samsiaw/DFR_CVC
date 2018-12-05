@@ -10,6 +10,10 @@
 
 /* Includes ------------------------------------------------------------------------*/
 #include "stm32f7xx_hal.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "demo.h"
+#include "queue.h"
 
 /* Defines ------------------------------------------------------------------------*/
 /* Definition for CANx clock resources */
@@ -73,8 +77,8 @@ typedef struct CAN_msg_s
 } CAN_msg_t;
 
 /* Public Variables ------------------------------------------------------------------------*/
-QueueHandle_t RxQueue = NULL;	/* CAN Rx Message Queue */
-QueueHandle_t TxQueue = NULL;	/* CAN Tx Message Queue */
+QueueHandle_t RxQueue;	/* CAN Rx Message Queue */
+QueueHandle_t TxQueue;	/* CAN Tx Message Queue */
 
 /* Public Function Prototypes ------------------------------------------------------------------------*/
 void CAN_Init(void)	;
