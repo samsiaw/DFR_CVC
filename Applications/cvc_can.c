@@ -62,6 +62,8 @@ void CAN_Demo_Task(void * parameters)
 
 				/* Increment LED_send */
 				LED_send = (LED_send % 3)+1;
+			} else {
+				vTaskSuspend(NULL);
 			}
 
 		#else
@@ -108,7 +110,7 @@ void CAN_Tx_Task(void * parameters)
 		/* get message from queue */
 		xQueueReceive( TxQueue, &Tx_msg, portMAX_DELAY );
 
-		if (HAL_CAN_AddTxMessage(&CanHandle, &Tx_msg.Tx_header, Tx_msg.data._8, &TxMailbox) == HAL_OK)
+		if (HAL_CAN_AddTxMessage(&CanHandle, &Tx_msg.Tx_header, Tx_msg.data._8, &TxMailbox) != HAL_OK)
 		{
 			/* Transmission request error */
 		} else Tx_msg_count++;	/* increment Tx count */
