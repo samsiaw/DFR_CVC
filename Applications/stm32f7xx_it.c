@@ -15,11 +15,15 @@
 #include <cmsis_os.h>
 #endif
 #include "stm32f7xx_it.h"
+#include "cvc_spi.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+/* SPI handler declared in "main.c" file */
+extern SPI_HandleTypeDef SpiHandle;
+
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
@@ -39,4 +43,14 @@ void SysTick_Handler(void)
 #ifdef USE_RTOS_SYSTICK
 	osSystickHandler();
 #endif
+}
+
+/**
+  * @brief  This function handles SPI interrupt request.
+  * @param  None
+  * @retval None
+  */
+void SPIx_IRQHandler(void)
+{
+  HAL_SPI_IRQHandler(&SpiHandle);
 }
