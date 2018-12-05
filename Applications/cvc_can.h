@@ -43,7 +43,8 @@
 
 /* Definition for CAN Limit Testing */
 #define SENDER_
-#define CAN_Tx_FREQ					100U	/* Frequency (Hz) of Tx messages */
+#define CAN_Tx_FREQ					500U	/* Frequency (Hz) of Tx messages */
+#define TEST_DURATION				120U	/* Duration of test in seconds */
 
 /* Type Definitions ------------------------------------------------------------------------*/
 typedef struct bamocar_data_16_s

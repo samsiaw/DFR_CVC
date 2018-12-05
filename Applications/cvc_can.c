@@ -28,9 +28,9 @@ CAN_RxHeaderTypeDef		RxHeader;
 uint32_t 				TxMailbox;
 uint8_t					RxData[8];
 
-static CAN_msg_t		demo_message;	// CAN message received through demo
-static uint32_t			Rx_msg_count;
-static uint32_t			Tx_msg_count;
+static CAN_msg_t		demo_message;	/* CAN message received through demo */
+static uint32_t			Rx_msg_count;	/* output register for count of received messages */
+static uint32_t			Tx_msg_count;	/* output register for count of sent messages */
 
 /* Private Function Prototypes ---------------------------------------------------------------*/
 static void CAN_Config(void);
@@ -51,7 +51,7 @@ void CAN_Demo_Task(void * parameters)
 			/* Delay task */
 			vTaskDelay((TickType_t) 1000/CAN_Tx_FREQ/portTICK_PERIOD_MS);
 
-			if (Tx_msg_count < 6000)	{
+			if (Tx_msg_count < CAN_Tx_FREQ*TEST_DURATION)	{
 				/* Build CAN message */
 				Tx_msg.Tx_header = TxHeader;
 				Tx_msg.data._8[0] = LED_send;
