@@ -65,7 +65,11 @@ void CAN_Demo_Task(void * parameters)
 			}
 
 		#else
+<<<<<<< HEAD
 			vTaskSuspend(NULL);
+=======
+
+>>>>>>> 477199cc8d20f6b62b4ab83e4cbbe30bbad316dc
 		#endif/* SENDER_ */
 	}
 
