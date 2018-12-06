@@ -58,7 +58,9 @@ void CAN_Demo_Task(void * parameters)
 				Tx_msg.data._8[1] = 0xAD;
 
 				/* Add CAN message to TxQueue */
-				xQueueSend(TxQueue, &Tx_msg, 0U);
+				if (xQueueSend(TxQueue, &Tx_msg, 0U) == errQUEUE_FULL)	{
+					/* Tx queue full */
+				}
 
 				/* Increment LED_send */
 				LED_send = (LED_send % 3)+1;

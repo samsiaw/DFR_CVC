@@ -56,29 +56,8 @@ int main(void)
 	vTaskStartScheduler();
 
 	/* Function should never reach this point once scheduler is started */
-	/* Infinite loop */
 	while(1)
 	{
-		/*
-		while(BSP_PB_GetState(BUTTON_USER) == 0x01)
-		{
-			if (ubKeyNumber == 0x3)
-			{
-				ubKeyNumber = 0x00;
-			}
-			else
-			{
-				LED_Display(++ubKeyNumber);
-
-				demo_transmit_func(ubKeyNumber);
-
-				HAL_Delay(10);
-
-				while (BSP_PB_GetState(BUTTON_USER) != 0x00)
-				{
-				}
-			}
-		} */
 	}
 }
 
