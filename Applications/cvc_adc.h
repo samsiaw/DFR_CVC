@@ -45,7 +45,7 @@
 
 /* Function Prototypes ------------------------------------------------------- */
 void config_adc_periph(void);
-void config_adc_chan(void);
+void config_adc_chan(uint32_t adc_channel, uint32_t adc_rank, uint32_t adc_sampleTime);
 void start_adc_conversion(void);
 
 void LED_function(Led_TypeDef led);

@@ -60,14 +60,14 @@ void config_adc_periph(void)
   * @retval	None
   */
 
-void config_adc_chan(void)
+void config_adc_chan(uint32_t adc_channel, uint32_t adc_rank, uint32_t adc_sampleTime)
 {
 	ADC_ChannelConfTypeDef sConfig;
 
 	/*##-2- Configure ADC regular channel ######################################*/
-	sConfig.Channel      = ADC_CHANNEL_10;
-	sConfig.Rank         = 1;
-	sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+	sConfig.Channel      = adc_channel;
+	sConfig.Rank         = adc_rank;
+	sConfig.SamplingTime = adc_sampleTime;
 	sConfig.Offset       = 0;
 
 	if (HAL_ADC_ConfigChannel(&AdcHandle, &sConfig) != HAL_OK)

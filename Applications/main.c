@@ -46,8 +46,7 @@ int main(void)
 
 	  config_adc_periph();
 
-	  //config_adc_chan(ADC_CHANNEL_10, 1, ADC_SAMPLETIME_3CYCLES);
-	  config_adc_chan();
+	  config_adc_chan(ADC_CHANNEL_10, 1, ADC_SAMPLETIME_3CYCLES);
 
 
 	  start_adc_conversion();
