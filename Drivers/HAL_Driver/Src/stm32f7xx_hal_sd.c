@@ -207,10 +207,12 @@
 /**
   * @brief  SDMMC Static flags, Timeout, FIFO Address
   */
+#ifndef SDMMC_STATIc_FLAGS
 #define SDMMC_STATIC_FLAGS               ((uint32_t)(SDIO_FLAG_CCRCFAIL | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_CTIMEOUT |\
                                                     SDIO_FLAG_DTIMEOUT | SDIO_FLAG_TXUNDERR | SDIO_FLAG_RXOVERR  |\
                                                     SDIO_FLAG_CMDREND  | SDIO_FLAG_CMDSENT  | SDIO_FLAG_DATAEND  |\
                                                     SDIO_FLAG_DBCKEND))
+#endif
 
 #define SDMMC_CMD0TIMEOUT                ((uint32_t)0x00010000)
 

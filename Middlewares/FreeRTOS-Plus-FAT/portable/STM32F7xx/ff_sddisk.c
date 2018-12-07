@@ -481,6 +481,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
 		PC12    ------> SDIO_CK
 		PD2     ------> SDIO_CMD
 		*/
+
 		/* Enable SDIO clock */
 		__HAL_RCC_SDMMC1_CLK_ENABLE();
 
