@@ -64,7 +64,33 @@ int main(void)
 
     Config_I2C_Periph(I2C_TIMING, I2C_ADDRESS);
 
-	for(;;);
+#ifdef MASTER_BOARD
+
+  /* Configure User push-button button */
+  BSP_PB_Init(BUTTON_USER,BUTTON_MODE_GPIO);
+
+  /* Wait for User push-button press before starting the Communication */
+  while (BSP_PB_GetState(BUTTON_USER) != GPIO_PIN_SET)
+  {
+  }
+
+  /* Wait for User push-button release before starting the Communication */
+  while (BSP_PB_GetState(BUTTON_USER) != GPIO_PIN_RESET)
+  {
+  }
+
+  I2C_Master_Transmit_Receive_Demo(I2C_ADDRESS);
+
+#else
+  I2C_Slave_Demo(uwTransferRequested);
+#endif
+
+  Compare_Buffers();
+
+  while(1)
+  {
+  }
+
 }
 
 

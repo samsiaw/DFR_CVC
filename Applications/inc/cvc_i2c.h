@@ -47,9 +47,15 @@
 
 /* Exported macro ------------------------------------------------------------*/
 #define COUNTOF(__BUFFER__)   (sizeof(__BUFFER__) / sizeof(*(__BUFFER__)))
+
 /* Exported functions ------------------------------------------------------- */
 
 void Config_I2C_Periph(uint32_t I2C_Timing, uint32_t I2C_Address);
+void I2C_Master_Transmit_Receive_Demo(void);
+void I2C_Slave_Demo(uint32_t uwTransferRequested);
+
+/* Variables -----------------------------------------------------------------*/
+
 
 
 #endif /* INC_CVC_I2C_H_ */
