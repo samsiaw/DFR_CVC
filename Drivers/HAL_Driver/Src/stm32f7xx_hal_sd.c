@@ -184,6 +184,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f7xx_hal.h"
+#include "stm32f7xx_ll_sdmmc.h"
 
 #ifdef HAL_SD_MODULE_ENABLED
 
@@ -207,7 +208,7 @@
 /**
   * @brief  SDMMC Static flags, Timeout, FIFO Address
   */
-#ifndef SDMMC_STATIc_FLAGS
+#ifndef SDMMC_STATIC_FLAGS
 #define SDMMC_STATIC_FLAGS               ((uint32_t)(SDIO_FLAG_CCRCFAIL | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_CTIMEOUT |\
                                                     SDIO_FLAG_DTIMEOUT | SDIO_FLAG_TXUNDERR | SDIO_FLAG_RXOVERR  |\
                                                     SDIO_FLAG_CMDREND  | SDIO_FLAG_CMDSENT  | SDIO_FLAG_DATAEND  |\
@@ -366,7 +367,7 @@ sources. */
 #define SDIO_SendCommand						SDMMC_SendCommand
 #define SDIO_Init								SDMMC_Init
 #define SDIO_GetResponse						SDMMC_GetResponse
-#define SDIO_DataConfig							SDMMC_DataConfig
+#define SDIO_DataConfig							SDMMC_ConfigData
 #define SDIO_GetPowerState						SDMMC_GetPowerState
 #define SDIO_PowerState_ON						SDMMC_PowerState_ON
 #define SDIO_PowerState_OFF						SDMMC_PowerState_OFF
@@ -902,7 +903,7 @@ HAL_SD_ErrorTypedef HAL_SD_WriteBlocks(SD_HandleTypeDef *hsd, uint32_t *pWriteBu
 	}
 	if( ( ( last_sta & SDIO_FLAG_TXUNDERR ) != 0 ) || ( bytesRemaining != 0 ) )
 	{
-		FF_PRINTF("TX underflow %lu < %lu\n", bytesRemaining, totalnumberofbytes );
+		//FF_PRINTF("TX underflow %lu < %lu\n", bytesRemaining, totalnumberofbytes );
 	}
   /* Send stop transmission command in case of multiblock write */
   if (__HAL_SD_SDIO_GET_FLAG(hsd, SDIO_FLAG_DATAEND) && (NumberOfBlocks > 1))
@@ -2692,7 +2693,7 @@ static HAL_SD_ErrorTypedef SD_PowerON(SD_HandleTypeDef *hsd)
 
 	  if( ( count == 0 ) || ( validvoltage != 0 ) )
 	  {
-		FF_PRINTF("Voltage resp: %08x\n", response);
+		//FF_PRINTF("Voltage resp: %08x\n", response);
 	  }
 
       count++;
@@ -3128,7 +3129,7 @@ static HAL_SD_ErrorTypedef SD_CmdResp6Error(SD_HandleTypeDef *hsd, uint8_t SD_CM
   /* Check response received is of desired command */
   if(SDIO_GetCommandResponse(hsd->Instance) != SD_CMD)
   {
-	FF_PRINTF( "RESPCMD[2] = %08x cmd = %02x\n", hsd->Instance->RESPCMD, SD_CMD );
+	//FF_PRINTF( "RESPCMD[2] = %08x cmd = %02x\n", hsd->Instance->RESPCMD, SD_CMD );
     errorstate = SD_ILLEGAL_CMD;
 
     return errorstate;
@@ -3154,7 +3155,7 @@ static HAL_SD_ErrorTypedef SD_CmdResp6Error(SD_HandleTypeDef *hsd, uint8_t SD_CM
 
   if((response_r1 & SD_R6_ILLEGAL_CMD) == SD_R6_ILLEGAL_CMD)
   {
-	FF_PRINTF( "response_r1 = %08x cmd = %02x\n", hsd->Instance->RESPCMD, SD_R6_ILLEGAL_CMD );
+	//FF_PRINTF( "response_r1 = %08x cmd = %02x\n", hsd->Instance->RESPCMD, SD_R6_ILLEGAL_CMD );
     return(SD_ILLEGAL_CMD);
   }
 
@@ -3466,7 +3467,7 @@ static HAL_SD_ErrorTypedef SD_IsCardProgramming(SD_HandleTypeDef *hsd, uint8_t *
   /* Check response received is of desired command */
   if((uint32_t)SDIO_GetCommandResponse(hsd->Instance) != SD_CMD_SEND_STATUS)
   {
-   FF_PRINTF( "RESPCMD[3] = %08x cmd = %02x\n", hsd->Instance->RESPCMD, SD_CMD_SEND_STATUS );
+   //FF_PRINTF( "RESPCMD[3] = %08x cmd = %02x\n", hsd->Instance->RESPCMD, SD_CMD_SEND_STATUS );
     errorstate = SD_ILLEGAL_CMD;
 
     return errorstate;

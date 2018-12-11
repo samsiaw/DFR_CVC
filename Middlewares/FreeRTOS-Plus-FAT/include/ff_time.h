@@ -57,7 +57,9 @@
 #ifndef _FF_TIME_H_
 #define _FF_TIME_H_
 
-#include <time.h>
+#if( ffconfigTIME_SUPPORT != 0 )	/* This if-block spans the rest of the source file. */
+	#include <time.h>
+#endif
 
 #include "FreeRTOSFATConfig.h"
 

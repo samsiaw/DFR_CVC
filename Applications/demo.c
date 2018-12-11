@@ -16,15 +16,15 @@
 void demoTask(void * parameters)	{
 
 	/* Initialize board LED */
-	BSP_LED_Init(LED_BLUE);
+	BSP_LED_Init(LED_RED);
 
 	for( ;; )
 	{
 		/* Place this task in the blocked state until it is time to run again. */
 		vTaskDelay((TickType_t) 1000/portTICK_PERIOD_MS);
 
-		BSP_LED_Toggle(LED_BLUE);
+		BSP_LED_Toggle(LED_RED);
 
-		console_write("\n\r toggled \n\r");
+		//console_write("\n\r toggled \n\r");
 	}
 }

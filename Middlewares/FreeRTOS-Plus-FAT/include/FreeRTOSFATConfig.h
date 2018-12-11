@@ -53,6 +53,7 @@
 code in future versions of FreeRTOS - at which time the following header file
 will be removed. */
 #include "FreeRTOS_errno_FAT.h"
+#include "string.h"
 
 
 /* Must be set to either pdFREERTOS_LITTLE_ENDIAN or pdFREERTOS_BIG_ENDIAN,
@@ -171,7 +172,7 @@ If time support is used, the following function must be supplied:
 	time_t FreeRTOS_time( time_t *pxTime );
 
 FreeRTOS_time has the same semantics as the standard time() function. */
-#define	ffconfigTIME_SUPPORT 1
+#define	ffconfigTIME_SUPPORT 0
 
 /* Set to 1 if the media is removable (such as a memory card).
 
@@ -267,7 +268,7 @@ ff_fprintf() is quite a heavy function because it allocates RAM and
 brings in a lot of string and variable argument handling code.  If
 ff_fprintf() is not being used then the code size can be reduced by setting
 ffconfigFPRINTF_SUPPORT to 0. */
-#define ffconfigFPRINTF_SUPPORT	1
+#define ffconfigFPRINTF_SUPPORT	0
 
 /* ff_fprintf() will allocate a buffer of this size in which it will create
 its formatted string.  The buffer will be freed before the function
@@ -306,7 +307,7 @@ extern int lUDPLoggingPrintf( const char *apFmt, ... );
 #define FF_PRINTF lUDPLoggingPrintf
 
 #define BUS_4BITS				1
-#define SDIO_USES_DMA			1
+#define SDIO_USES_DMA			0
 
 /* The test in "Common/FreeRTOS_Plus_FAT_Demos/test/ff_stdio_tests_with_cwd.c"
 want to call ff_deltree() to clear an entire directory before starting.

@@ -56,9 +56,8 @@
 #include "ff_headers.h"
 #include "ff_stdio.h"
 
-#if( ffconfigTIME_SUPPORT != 0 )
-	#include <time.h>
-#endif
+#include <time.h>
+
 
 
 #ifndef SIZE_MAX

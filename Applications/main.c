@@ -13,6 +13,7 @@
 #include "stm32f7xx_nucleo_144.h"
 #include "cvc_tasks.h"
 #include "cvc_serial.h"
+#include "cvc_logging.h"
 
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);

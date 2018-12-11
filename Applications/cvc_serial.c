@@ -77,7 +77,7 @@ void Configure_USART(void)
   /* (2) NVIC Configuration for USART interrupts */
   /*  - Set priority for USARTx_IRQn */
   /*  - Enable USARTx_IRQn */
-  NVIC_SetPriority(USARTx_IRQn, MAX_IRQ_PRIORITY);
+  NVIC_SetPriority(USARTx_IRQn, MAX_IRQ_PRIORITY+10);
   NVIC_EnableIRQ(USARTx_IRQn);
 
   /* (3) Enable USART peripheral clock and clock source ***********************/

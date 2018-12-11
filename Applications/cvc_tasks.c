@@ -9,13 +9,14 @@
 #include "cvc_tasks.h"
 
 /* Defines -------------------------------------------------------------------*/
-#define TASKLIST_SIZE 	1
+#define TASKLIST_SIZE 	2
 
 /* Private Variables ---------------------------------------------------------*/
 
 /* list of all program tasks */
 static task_t taskList[] = {
 		{demoTask, "demo", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL},		/* demo blinky task */
+		{demoLoggingTask, "logging", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 2, NULL},
 };
 
 /* Public Functions ----------------------------------------------------------*/
