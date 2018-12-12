@@ -131,6 +131,8 @@ void CAN_Tx_Task(void * parameters)
 
 /**
  * @brief	Initialize CAN
+ * @param	None
+ * @retval	None
  */
 void CAN_Init(void)
 {
