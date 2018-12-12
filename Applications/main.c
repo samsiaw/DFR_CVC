@@ -7,6 +7,8 @@
 /* Private define ------------------------------------------------------------*/
 /* Uncomment this line to use the board as master, if not it is used as slave */
 //#define MASTER_BOARD
+
+#define MASTER_BOARD
 #define I2C_ADDRESS       0x30F
 #define I2C_TIMING        0x00D00E28  /* (Rise time = 120ns, Fall time = 25ns) */
 
