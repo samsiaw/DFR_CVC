@@ -13,11 +13,11 @@
 #include "stm32f7xx_nucleo_144.h"
 #include "cvc_tasks.h"
 #include "cvc_can.h"
+#include "demo.h"
 
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
 static void CPU_CACHE_Enable(void);
-void LED_Display(uint8_t LedStatus);
 
 /* Private Variables ----------------------------------------------------*/
 uint8_t ubKeyNumber = 0x0;
