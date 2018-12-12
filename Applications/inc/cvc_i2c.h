@@ -41,7 +41,10 @@
 #define I2Cx_ER_IRQHandler              I2C1_ER_IRQHandler
 
 /* Size of Transmission buffer */
-#define TXBUFFERSIZE                      (COUNTOF(aTxBuffer) - 1)
+//#define TXBUFFERSIZE                      (COUNTOF(aTxBuffer) - 1)
+
+#define TXBUFFERSIZE					174
+
 /* Size of Reception buffer */
 #define RXBUFFERSIZE                      TXBUFFERSIZE
 
@@ -49,13 +52,10 @@
 #define COUNTOF(__BUFFER__)   (sizeof(__BUFFER__) / sizeof(*(__BUFFER__)))
 
 /* Exported functions ------------------------------------------------------- */
+void Config_I2C_Periph(uint32_t I2C_Address, uint32_t I2C_Timing, I2C_HandleTypeDef* I2cHandle);
+void I2C_Master_Demo_Transmit(uint32_t I2C_Address, I2C_HandleTypeDef* I2cHandle, uint8_t* aTxBuffer);
+void I2C_Master_Demo_Receive(uint32_t I2C_Address, I2C_HandleTypeDef* I2cHandle, uint8_t* aRxBuffer);
 
-void Config_I2C_Periph(uint32_t I2C_Timing, uint32_t I2C_Address);
-void I2C_Master_Transmit_Receive_Demo(void);
-void I2C_Slave_Demo(uint32_t uwTransferRequested);
-
-/* Variables -----------------------------------------------------------------*/
-
-
+void Error_Handler(void);
 
 #endif /* INC_CVC_I2C_H_ */

@@ -1,22 +1,12 @@
-/**
-  ******************************************************************************
-  * @file    main.c
-  * @author  Ac6
-  * @version V1.0
-  * @date    01-December-2013
-  * @brief   Default main function.
-  ******************************************************************************
-*/
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f7xx.h"
-#include "stm32f7xx_nucleo_144.h"
 #include "cvc_i2c.h"
+
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Uncomment this line to use the board as master, if not it is used as slave */
-#define MASTER_BOARD
+//#define MASTER_BOARD
 #define I2C_ADDRESS       0x30F
 #define I2C_TIMING        0x00D00E28  /* (Rise time = 120ns, Fall time = 25ns) */
 
@@ -38,6 +28,7 @@ __IO uint32_t     uwTransferRequested = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
+static uint16_t Buffercmp(uint8_t *pBuffer1, uint8_t *pBuffer2, uint16_t BufferLength);
 static void CPU_CACHE_Enable(void);
 /* Private functions ---------------------------------------------------------*/
 
@@ -48,21 +39,22 @@ static void CPU_CACHE_Enable(void);
   */
 int main(void)
 {
-	/* Enable the CPU Cache */
-	CPU_CACHE_Enable();
+  /* Enable the CPU Cache */
+  CPU_CACHE_Enable();
 
-	/* STM32F7xx HAL library initialization */
-	HAL_Init();
+  /* STM32F7xx HAL library initialization */
+  HAL_Init();
 
-	/* Configure the system clock to 216 MHz */
-	SystemClock_Config();
+  /* Configure the system clock to 216 MHz */
+  SystemClock_Config();
 
-	/* Configure LED1, LED2,and LED3 */
-	BSP_LED_Init(LED1);
-    BSP_LED_Init(LED2);
-    BSP_LED_Init(LED3);
+  /* Configure LED1, LED2,and LED3 */
+  BSP_LED_Init(LED1);
+  BSP_LED_Init(LED2);
+  BSP_LED_Init(LED3);
 
-    Config_I2C_Periph(I2C_TIMING, I2C_ADDRESS);
+  Config_I2C_Periph(I2C_ADDRESS, I2C_TIMING, &I2cHandle);
+
 
 #ifdef MASTER_BOARD
 
@@ -79,20 +71,101 @@ int main(void)
   {
   }
 
-  I2C_Master_Transmit_Receive_Demo(I2C_ADDRESS);
+  I2C_Master_Demo_Transmit(I2C_ADDRESS, &I2cHandle, aTxBuffer);
 
-#else
-  I2C_Slave_Demo(uwTransferRequested);
-#endif
-
-  Compare_Buffers();
-
-  while(1)
+  /* Wait for User push-button press before starting the Communication */
+  while (BSP_PB_GetState(BUTTON_USER) != GPIO_PIN_SET)
   {
   }
 
-}
+  /* Wait for User push-button release before starting the Communication */
+  while (BSP_PB_GetState(BUTTON_USER) != GPIO_PIN_RESET)
+  {
+  }
 
+  I2C_Master_Demo_Receive(I2C_ADDRESS, &I2cHandle, aRxBuffer);
+
+
+#else
+
+  /* The board receives the message and sends it back */
+
+  /*##-3- Put I2C peripheral in listen mode process ###########################*/
+  if(HAL_I2C_EnableListen_IT(&I2cHandle) != HAL_OK)
+  {
+    /* Transfer error in reception process */
+    Error_Handler();
+  }
+
+  /*##-4- Wait Address Match Code event ######################################*/
+  /*  Before starting a transfer, you need to wait a Master request event.
+      For simplicity reasons, this example is just waiting till an Address callback event,
+      but application may perform other tasks while transfer operation is ongoing. */
+  while(uwTransferRequested != 1)
+  {
+  }
+
+  /*##-5- Put I2C peripheral in reception process ############################*/
+  if(HAL_I2C_Slave_Sequential_Receive_IT(&I2cHandle, (uint8_t *)aRxBuffer, RXBUFFERSIZE, I2C_FIRST_FRAME) != HAL_OK)
+  {
+    /* Transfer error in reception process */
+    Error_Handler();
+  }
+
+
+  /*##-6- Wait for the end of the transfer ###################################*/
+  /*  Before starting a new communication transfer, you need to check the current
+      state of the peripheral; if it’s busy you need to wait for the end of current
+      transfer before starting a new one.
+      For simplicity reasons, this example is just waiting till the end of the
+      transfer, but application may perform other tasks while transfer operation
+      is ongoing. */
+  while (HAL_I2C_GetState(&I2cHandle) != HAL_I2C_STATE_LISTEN)
+  {
+  }
+
+  /*##-7- Wait Address Match Code event ######################################*/
+  /*  Before starting a transfer, you need to wait a Master request event.
+      For simplicity reasons, this example is just waiting till an Address callback event,
+      but application may perform other tasks while transfer operation is ongoing. */
+  while(uwTransferRequested != 1)
+  {
+  }
+
+  /*##-8- Start the transmission process #####################################*/
+  /* While the I2C in reception process, user can transmit data through
+     "aTxBuffer" buffer */
+  if(HAL_I2C_Slave_Sequential_Transmit_IT(&I2cHandle, (uint8_t*)aTxBuffer, TXBUFFERSIZE, I2C_LAST_FRAME)!= HAL_OK)
+  {
+    /* Transfer error in transmission process */
+    Error_Handler();
+  }
+
+#endif /* MASTER_BOARD */
+
+  /*##-5- Wait for the end of the transfer ###################################*/
+  /*  Before starting a new communication transfer, you need to check the current
+      state of the peripheral; if it’s busy you need to wait for the end of current
+      transfer before starting a new one.
+      For simplicity reasons, this example is just waiting till the end of the
+      transfer, but application may perform other tasks while transfer operation
+      is ongoing. */
+  while (HAL_I2C_GetState(&I2cHandle) != HAL_I2C_STATE_READY)
+  {
+  }
+
+  /*##-6- Compare the sent and received buffers ##############################*/
+  if(Buffercmp((uint8_t*)aTxBuffer,(uint8_t*)aRxBuffer,RXBUFFERSIZE))
+  {
+    /* Processing Error */
+    Error_Handler();
+  }
+
+  /* Infinite loop */
+  while (1)
+  {
+  }
+}
 
 /**
   * @brief  System Clock Configuration
@@ -155,6 +228,142 @@ static void SystemClock_Config(void)
   }
 }
 
+/**
+  * @brief  Tx Transfer completed callback.
+  * @param  I2cHandle: I2C handle
+  * @note   This example shows a simple way to report end of IT Tx transfer, and
+  *         you can add your own implementation.
+  * @retval None
+  */
+#ifdef MASTER_BOARD
+void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *I2cHandle)
+{
+  /* Turn LED1 on: Transfer in transmission process is correct */
+  BSP_LED_On(LED1);
+}
+#else
+void HAL_I2C_SlaveTxCpltCallback(I2C_HandleTypeDef *I2cHandle)
+{
+  /* Reset address match code event */
+  uwTransferRequested = 0;
+
+  /* Turn LED1 on: Transfer in transmission process is correct */
+  BSP_LED_On(LED1);
+}
+#endif /* MASTER_BOARD */
+
+/**
+  * @brief  Rx Transfer completed callback.
+  * @param  I2cHandle: I2C handle
+  * @note   This example shows a simple way to report end of IT Rx transfer, and
+  *         you can add your own implementation.
+  * @retval None
+  */
+#ifdef MASTER_BOARD
+void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *I2cHandle)
+{
+  /* Turn LED2 on: Transfer in reception process is correct */
+  BSP_LED_On(LED2);
+}
+#else
+void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *I2cHandle)
+{
+  /* Reset address match code event */
+  uwTransferRequested = 0;
+
+  /* Turn LED2 on: Transfer in reception process is correct */
+  BSP_LED_On(LED2);
+}
+#endif /* MASTER_BOARD */
+
+#ifndef MASTER_BOARD
+/**
+  * @brief  Slave Address Match callback.
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
+  *                the configuration information for the specified I2C.
+  * @param  TransferDirection: Master request Transfer Direction (Write/Read), value of @ref I2C_XferOptions_definition
+  * @param  AddrMatchCode: Address Match Code
+  * @retval None
+  */
+void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection, uint16_t AddrMatchCode)
+{
+  uwTransferRequested = 1;
+  /* A new communication with a Master is initiated */
+}
+
+/**
+  * @brief  Listen Complete callback.
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
+  *                the configuration information for the specified I2C.
+  * @retval None
+  */
+void HAL_I2C_ListenCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+  /* Turn LED4 off: Communication is completed */
+}
+#endif
+
+/**
+  * @brief  I2C error callbacks.
+  * @param  I2cHandle: I2C handle
+  * @note   This example shows a simple way to report transfer error, and you can
+  *         add your own implementation.
+  * @retval None
+  */
+void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *I2cHandle)
+{
+  /** Error_Handler() function is called when error occurs.
+    * 1- When Slave don't acknowledge it's address, Master restarts communication.
+    * 2- When Master don't acknowledge the last data transferred, Slave don't care in this example.
+    */
+  if (HAL_I2C_GetError(I2cHandle) != HAL_I2C_ERROR_AF)
+  {
+    /* Turn Off LED1 */
+    BSP_LED_Off(LED1);
+
+    /* Turn Off LED2 */
+    BSP_LED_Off(LED2);
+
+    /* Turn On LED3 */
+    BSP_LED_On(LED3);
+  }
+}
+
+/**
+  * @brief  This function is executed in case of error occurrence.
+  * @param  None
+  * @retval None
+  */
+void Error_Handler(void)
+{
+  /* Turn LED3 on */
+  BSP_LED_On(LED3);
+  while(1)
+  {
+  }
+}
+
+/**
+  * @brief  Compares two buffers.
+  * @param  pBuffer1, pBuffer2: buffers to be compared.
+  * @param  BufferLength: buffer's length
+  * @retval 0  : pBuffer1 identical to pBuffer2
+  *         >0 : pBuffer1 differs from pBuffer2
+  */
+static uint16_t Buffercmp(uint8_t* pBuffer1, uint8_t* pBuffer2, uint16_t BufferLength)
+{
+  while (BufferLength--)
+  {
+    if ((*pBuffer1) != *pBuffer2)
+    {
+      return BufferLength;
+    }
+    pBuffer1++;
+    pBuffer2++;
+  }
+
+  return 0;
+}
 
 /**
   * @brief  CPU L1-Cache enable.
@@ -170,4 +379,35 @@ static void CPU_CACHE_Enable(void)
   SCB_EnableDCache();
 }
 
+#ifdef  USE_FULL_ASSERT
+
+/**
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
+void assert_failed(uint8_t* file, uint32_t line)
+{
+  /* User can add his own implementation to report the file name and line number,
+     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+
+  /* Infinite loop */
+  while (1)
+  {
+  }
+}
+#endif
+
+
+/**
+  * @}
+  */
+
+/**
+  * @}
+  */
+
+/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
 
