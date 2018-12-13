@@ -43,6 +43,10 @@ void SysTick_Handler(void)
 #endif
 }
 
+
+/******************************************************************************/
+/*            	  	   		 CAN Interrupt Handles                            */
+/******************************************************************************/
 /**
   * @brief	This function handles CAN1 RX0 interrupt requests
   * @param	None

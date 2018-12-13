@@ -20,9 +20,22 @@ void demoTask(void * parameters)	{
 	for( ;; )
 	{
 		/* Place this task in the blocked state until it is time to run again. */
-		vTaskDelay((TickType_t) 1000/portTICK_PERIOD_MS);
+		vTaskDelay((TickType_t) 100/portTICK_PERIOD_MS);
 
-		BSP_LED_Toggle(LED_BLUE);
+		BSP_LED_Off(LED_GREEN);
+		BSP_LED_On(LED_RED);
+
+		vTaskDelay((TickType_t) 100/portTICK_PERIOD_MS);
+
+		BSP_LED_Off(LED_RED);
+		BSP_LED_On(LED_BLUE);
+
+		vTaskDelay((TickType_t) 100/portTICK_PERIOD_MS);
+
+		BSP_LED_Off(LED_BLUE);
+		BSP_LED_On(LED_GREEN);
+
+
 	}
 }
 

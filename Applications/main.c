@@ -13,6 +13,7 @@
 #include "stm32f7xx_nucleo_144.h"
 #include "cvc_tasks.h"
 #include "cvc_can.h"
+#include "cvc_spi.h"
 #include "demo.h"
 
 /* Private function prototypes -----------------------------------------------*/
