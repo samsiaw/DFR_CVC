@@ -23,6 +23,14 @@ enum {
 static uint16_t Buffercmp(uint8_t *pBuffer1, uint8_t *pBuffer2, uint16_t BufferLength);
 static void Error_Handler(void);
 
+void set_SPI_check_bit_outputs(volatile PLC_Write_u_t *WriteValue);
+
+/* Volatile variables --------------------------------------------------------*/
+volatile PLC_Read_u_t PLC_Read;
+volatile PLC_Write_u_t PLC_Write;
+volatile SPI_inputs_vector_t SPI_inputs_vector;
+volatile SPI_outputs_vector_t SPI_outputs_vector;
+
 /* Private variables ---------------------------------------------------------*/
 /* SPI handler declaration */
 SPI_HandleTypeDef SpiHandle;
@@ -30,11 +38,39 @@ SPI_HandleTypeDef SpiHandle;
 /* Buffer used for transmission */
 uint8_t aTxBuffer[] = "****SPI - Two Boards communication based on Interrupt **** SPI Message ******** SPI Message ******** SPI Message ****";
 
+uint8_t SPI_PLC_TxBuffer[PLCBUFFERSIZE];
+
 /* Buffer used for reception */
 uint8_t aRxBuffer[BUFFERSIZE];
 
+uint8_t SPI_PLC_RxBuffer[PLCBUFFERSIZE];
+
 /* transfer state */
 __IO uint32_t wTransferState = TRANSFER_WAIT;
+
+
+/**
+  * @brief  SPI routine function that does SPI communication within synchronous task
+  * @param	None
+  * @retval	None
+  */
+void SPI_Routine(void)
+{
+
+	/*
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_SET);
+	read_SPI_Rx_Buffer(SPI_PLC_RxBuffer, PLCBUFFERSIZE);
+	SPI_PLC_Set_Inputs();
+
+	SPI_PLC_Set_Outputs();
+	write_SPI_Tx_Buffer(SPI_PLC_TxBuffer, PLCBUFFERSIZE);
+
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
+	SPI_PLC_Transmit_Receive();
+	*/
+
+	SPI_PLC_Set_Outputs();
+}
 
 
 
@@ -43,7 +79,7 @@ __IO uint32_t wTransferState = TRANSFER_WAIT;
   * @param	Board type (MASTER or SLAVE)
   * @retval	None
   */
-void SPI_Config(uint32_t boardType)
+void SPI_Config(void)
 {
 	/*##-1- Configure the SPI peripheral #######################################*/
 	/* Set the SPI parameters */
@@ -60,15 +96,156 @@ void SPI_Config(uint32_t boardType)
 	SpiHandle.Init.NSS               = SPI_NSS_SOFT;
 	SpiHandle.Init.Mode 			 = SPI_MODE_MASTER;
 
-
 	if(HAL_SPI_Init(&SpiHandle) != HAL_OK)
 	{
 		/* Initialization Error */
 		Error_Handler();
 	}
+
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_9, GPIO_PIN_SET);
+
 }
 
 
+
+/**
+  * @brief	Read new data from RxBuffer into PLC_Read
+  * @param	RxBuffer pointer, buffer length
+  * @retval	None
+  */
+void read_SPI_Rx_Buffer(uint8_t	*RxBuffer, uint16_t Buffer_Length)
+{
+	int i;
+	for (i=0; i<Buffer_Length; i++)
+	{
+		PLC_Read.bytes[i] = RxBuffer[i];
+	}
+}
+
+
+/**
+  * @brief	Write data from PLC_Write to TxBuffer
+  * @param	TxBuffer pointer, buffer length
+  * @retval	None
+  */
+void write_SPI_Tx_Buffer(uint8_t *TxBuffer, uint16_t Buffer_Length)
+{
+	int i;
+	for (i=0; i<Buffer_Length; i++)
+	{
+		TxBuffer[i] = PLC_Write.bytes[i];
+	}
+}
+
+
+/**
+  * @brief	Set SPI_inputs_vector values using PLC_Read data
+  * @param	None
+  * @retval	None
+  */
+void SPI_PLC_Set_Inputs(void)
+{
+	SPI_inputs_vector.ICE_enable 					= PLC_Read.bit.IN1;
+	SPI_inputs_vector.Motor_enable 					= PLC_Read.bit.IN2;
+	SPI_inputs_vector.Ready_to_drive 				= PLC_Read.bit.IN3;
+	SPI_inputs_vector.Dash_BRB_press 				= !PLC_Read.bit.IN4;
+	SPI_inputs_vector.IMD_safety_circuit_fault 		= PLC_Read.bit.IN5;
+	SPI_inputs_vector.BMS_safety_circuit_fault 		= PLC_Read.bit.IN6;
+	SPI_inputs_vector.Bamocar_safety_circuit_fault 	= PLC_Read.bit.IN7;
+
+}
+
+
+/**
+  * @brief	Set PLC_Write values using SPI_ouputs_vector values
+  * @param	None
+  * @retval	None
+  */
+void SPI_PLC_Set_Outputs(void)
+{
+	PLC_Write.bit.OUT1 = SPI_outputs_vector.safety;
+	PLC_Write.bit.OUT2 = SPI_outputs_vector.ready_to_drive;
+	PLC_Write.bit.OUT3 = SPI_outputs_vector.rfg;
+	PLC_Write.bit.OUT4 = SPI_outputs_vector.ignition_kill;
+	PLC_Write.bit.OUT5 = SPI_outputs_vector.downshift_solenoid;
+	PLC_Write.bit.OUT6 = SPI_outputs_vector.upshift_solenoid;
+	PLC_Write.bit.OUT7 = 0;
+	PLC_Write.bit.OUT8 = 0;
+
+	set_SPI_check_bit_outputs(&PLC_Write);
+}
+
+
+/**
+  * @brief	Set special output bits for PLC_Write
+  * @param	None
+  * @retval	None
+  */
+void set_SPI_check_bit_outputs(volatile PLC_Write_u_t *WriteValue)
+{
+	WriteValue->bit.SPARE= 0;
+
+	WriteValue->bit.P0	=
+	(
+		  WriteValue->bit.OUT1
+		+ WriteValue->bit.OUT2
+		+ WriteValue->bit.OUT3
+		+ WriteValue->bit.OUT4
+		+ WriteValue->bit.OUT5
+		+ WriteValue->bit.OUT6
+		+ WriteValue->bit.OUT7
+		+ WriteValue->bit.OUT8
+	);
+
+	WriteValue->bit.P1 	=
+	(
+		  WriteValue->bit.OUT2
+		+ WriteValue->bit.OUT4
+		+ WriteValue->bit.OUT6
+		+ WriteValue->bit.OUT8
+	);
+
+	WriteValue->bit.P2 	=
+	(
+		  WriteValue->bit.OUT1
+		+ WriteValue->bit.OUT3
+		+ WriteValue->bit.OUT5
+		+ WriteValue->bit.OUT7
+	);
+
+	WriteValue->bit.nP0 = !(WriteValue->bit.P0);
+}
+
+void SPI_PLC_Transmit_Receive(void)
+{
+
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
+
+	if(HAL_SPI_TransmitReceive_IT(&SpiHandle, (uint8_t*)SPI_PLC_TxBuffer, (uint8_t *)SPI_PLC_RxBuffer, PLCBUFFERSIZE) != HAL_OK)
+	{
+		/* Transfer error in transmission process */
+		Error_Handler();
+	}
+
+	while (wTransferState == TRANSFER_WAIT)
+	{
+	}
+
+	switch(wTransferState)
+	{
+	    case TRANSFER_COMPLETE :
+	    	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
+	    	break;
+	    default :
+	    	Error_Handler();
+	    	break;
+	}
+
+}
 
 /**
   * @brief	Demo function for transmitting/receiving SPI data
@@ -147,7 +324,7 @@ static uint16_t Buffercmp(uint8_t *pBuffer1, uint8_t *pBuffer2, uint16_t BufferL
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
 	/* Transfer complete LED function*/
-	trans_complete_LEDs();
+	//trans_complete_LEDs();
 	wTransferState = TRANSFER_COMPLETE;
 }
 
@@ -170,8 +347,6 @@ void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi)
   */
 static void Error_Handler(void)
 {
-	/* Error LED function */
-	error_LEDs();
 	while (1)
 	{
 	}
