@@ -16,7 +16,6 @@
 #include "cvc_spi.h"
 #include "demo.h"
 
-
 /* PLC-specific includes -----------------------------------------------------*/
 #include "x_nucleo_plc01a1.h"
 #include "stm32f7xx_hal.h"
@@ -79,10 +78,6 @@ int main(void)
 	BSP_RELAY_EN_Out();
 
 
-
-
-
-
 	/* Configure LED1 and LED3 */
 /*	BSP_LED_Init(LED1);
 	BSP_LED_Init(LED2);
@@ -118,7 +113,6 @@ int main(void)
 	{
 		PLC_Handler();
 	}
-
 
 }
 

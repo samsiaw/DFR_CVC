@@ -457,9 +457,11 @@ uint8_t* VNI8200XP_SendOutputData(uint8_t udata)
   *txData = parityData; 
   *(txData+1) = udata;
   
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);  
+  //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
   HAL_SPI_TransmitReceive(&SPI_EXPBD_Handle,txData,rxData,1,0x100);
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET); 
+  //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
   
   return rxData;
 }
@@ -605,9 +607,11 @@ uint8_t* CLT01_38S_GetInpData(void)
 {
   static uint8_t txData[2],rxData[2];
   
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); 
+  //HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET);
   HAL_SPI_TransmitReceive(&SPI_EXPBD_Handle, txData, rxData, 1, 0x100);
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); 
+  //HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_SET);
 
   return rxData;
 }
