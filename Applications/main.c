@@ -9,7 +9,7 @@
 //#define MASTER_BOARD
 
 #define MASTER_BOARD
-#define I2C_ADDRESS       0x30F
+#define I2C_ADDRESS       0x6B
 #define I2C_TIMING        0x00D00E28  /* (Rise time = 120ns, Fall time = 25ns) */
 
 /* Private macro -------------------------------------------------------------*/
@@ -23,10 +23,6 @@ uint8_t aTxBuffer[] = " ****I2C_TwoBoards advanced communication based on IT****
 /* Buffer used for reception */
 uint8_t aRxBuffer[RXBUFFERSIZE];
 
-#ifndef MASTER_BOARD
-/* Variable used to trig an address match code event */
-__IO uint32_t     uwTransferRequested = 0;
-#endif
 
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
@@ -58,7 +54,6 @@ int main(void)
   Config_I2C_Periph(I2C_ADDRESS, I2C_TIMING, &I2cHandle);
 
 
-#ifdef MASTER_BOARD
 
   /* Configure User push-button button */
   BSP_PB_Init(BUTTON_USER,BUTTON_MODE_GPIO);
@@ -88,62 +83,7 @@ int main(void)
   I2C_Master_Demo_Receive(I2C_ADDRESS, &I2cHandle, aRxBuffer);
 
 
-#else
 
-  /* The board receives the message and sends it back */
-
-  /*##-3- Put I2C peripheral in listen mode process ###########################*/
-  if(HAL_I2C_EnableListen_IT(&I2cHandle) != HAL_OK)
-  {
-    /* Transfer error in reception process */
-    Error_Handler();
-  }
-
-  /*##-4- Wait Address Match Code event ######################################*/
-  /*  Before starting a transfer, you need to wait a Master request event.
-      For simplicity reasons, this example is just waiting till an Address callback event,
-      but application may perform other tasks while transfer operation is ongoing. */
-  while(uwTransferRequested != 1)
-  {
-  }
-
-  /*##-5- Put I2C peripheral in reception process ############################*/
-  if(HAL_I2C_Slave_Sequential_Receive_IT(&I2cHandle, (uint8_t *)aRxBuffer, RXBUFFERSIZE, I2C_FIRST_FRAME) != HAL_OK)
-  {
-    /* Transfer error in reception process */
-    Error_Handler();
-  }
-
-
-  /*##-6- Wait for the end of the transfer ###################################*/
-  /*  Before starting a new communication transfer, you need to check the current
-      state of the peripheral; if it’s busy you need to wait for the end of current
-      transfer before starting a new one.
-      For simplicity reasons, this example is just waiting till the end of the
-      transfer, but application may perform other tasks while transfer operation
-      is ongoing. */
-  while (HAL_I2C_GetState(&I2cHandle) != HAL_I2C_STATE_LISTEN)
-  {
-  }
-
-  /*##-7- Wait Address Match Code event ######################################*/
-  /*  Before starting a transfer, you need to wait a Master request event.
-      For simplicity reasons, this example is just waiting till an Address callback event,
-      but application may perform other tasks while transfer operation is ongoing. */
-  while(uwTransferRequested != 1)
-  {
-  }
-
-  /*##-8- Start the transmission process #####################################*/
-  /* While the I2C in reception process, user can transmit data through
-     "aTxBuffer" buffer */
-  if(HAL_I2C_Slave_Sequential_Transmit_IT(&I2cHandle, (uint8_t*)aTxBuffer, TXBUFFERSIZE, I2C_LAST_FRAME)!= HAL_OK)
-  {
-    /* Transfer error in transmission process */
-    Error_Handler();
-  }
-
-#endif /* MASTER_BOARD */
 
   /*##-5- Wait for the end of the transfer ###################################*/
   /*  Before starting a new communication transfer, you need to check the current
@@ -237,22 +177,12 @@ static void SystemClock_Config(void)
   *         you can add your own implementation.
   * @retval None
   */
-#ifdef MASTER_BOARD
 void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *I2cHandle)
 {
   /* Turn LED1 on: Transfer in transmission process is correct */
   BSP_LED_On(LED1);
 }
-#else
-void HAL_I2C_SlaveTxCpltCallback(I2C_HandleTypeDef *I2cHandle)
-{
-  /* Reset address match code event */
-  uwTransferRequested = 0;
 
-  /* Turn LED1 on: Transfer in transmission process is correct */
-  BSP_LED_On(LED1);
-}
-#endif /* MASTER_BOARD */
 
 /**
   * @brief  Rx Transfer completed callback.
@@ -261,49 +191,14 @@ void HAL_I2C_SlaveTxCpltCallback(I2C_HandleTypeDef *I2cHandle)
   *         you can add your own implementation.
   * @retval None
   */
-#ifdef MASTER_BOARD
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *I2cHandle)
 {
   /* Turn LED2 on: Transfer in reception process is correct */
   BSP_LED_On(LED2);
 }
-#else
-void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *I2cHandle)
-{
-  /* Reset address match code event */
-  uwTransferRequested = 0;
 
-  /* Turn LED2 on: Transfer in reception process is correct */
-  BSP_LED_On(LED2);
-}
-#endif /* MASTER_BOARD */
 
-#ifndef MASTER_BOARD
-/**
-  * @brief  Slave Address Match callback.
-  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
-  *                the configuration information for the specified I2C.
-  * @param  TransferDirection: Master request Transfer Direction (Write/Read), value of @ref I2C_XferOptions_definition
-  * @param  AddrMatchCode: Address Match Code
-  * @retval None
-  */
-void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection, uint16_t AddrMatchCode)
-{
-  uwTransferRequested = 1;
-  /* A new communication with a Master is initiated */
-}
 
-/**
-  * @brief  Listen Complete callback.
-  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
-  *                the configuration information for the specified I2C.
-  * @retval None
-  */
-void HAL_I2C_ListenCpltCallback(I2C_HandleTypeDef *hi2c)
-{
-  /* Turn LED4 off: Communication is completed */
-}
-#endif
 
 /**
   * @brief  I2C error callbacks.
@@ -380,27 +275,6 @@ static void CPU_CACHE_Enable(void)
   /* Enable D-Cache */
   SCB_EnableDCache();
 }
-
-#ifdef  USE_FULL_ASSERT
-
-/**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
-void assert_failed(uint8_t* file, uint32_t line)
-{
-  /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-
-  /* Infinite loop */
-  while (1)
-  {
-  }
-}
-#endif
 
 
 /**
