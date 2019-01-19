@@ -52,3 +52,4 @@ void CANx_RX_IRQHandler(void)
 {
 	HAL_CAN_IRQHandler(&CanHandle);
 }
+
