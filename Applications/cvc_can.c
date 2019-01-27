@@ -165,7 +165,7 @@ void CAN_Demo_Task(void * parameters)
 	while (1)
 	{
 		/* Delay task for 1 millisecond */
-		vTaskDelay((TickType_t) 1000/portTICK_PERIOD_MS);
+		vTaskDelay((TickType_t) 1/portTICK_PERIOD_MS);
 
 #ifdef SENDER
 
@@ -418,9 +418,9 @@ static void CAN_Config(void)
 	CanHandle.Init.TransmitFifoPriority = DISABLE;
 	CanHandle.Init.Mode = CAN_MODE_NORMAL;
 	CanHandle.Init.SyncJumpWidth = CAN_SJW_1TQ;
-	CanHandle.Init.TimeSeg1 = CAN_BS1_7TQ;
-	CanHandle.Init.TimeSeg2 = CAN_BS2_2TQ;
-	CanHandle.Init.Prescaler = 9;
+	CanHandle.Init.TimeSeg1 = CAN_BS1_10TQ;
+	CanHandle.Init.TimeSeg2 = CAN_BS2_1TQ;
+	CanHandle.Init.Prescaler = 3;
 
 	if (HAL_CAN_Init(&CanHandle) != HAL_OK)
 	{
