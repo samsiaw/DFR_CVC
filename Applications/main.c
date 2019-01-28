@@ -11,6 +11,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f7xx.h"
 #include "stm32f7xx_nucleo_144.h"
+#include "stm32f7xx_hal_rcc.h"
 #include "cvc_tasks.h"
 #include "cvc_can.h"
 
@@ -37,6 +38,12 @@ int main(void)
 
 	/* Configure the system clock to 216 MHz */
 	SystemClock_Config();
+
+	/* check clock rates */
+	uint32_t sclk = HAL_RCC_GetSysClockFreq();
+	uint32_t hclk = HAL_RCC_GetHCLKFreq();
+	uint32_t pclk1 = HAL_RCC_GetPCLK1Freq();
+	uint32_t pclk2 = HAL_RCC_GetPCLK2Freq();
 
 	/* Configure LED1 and LED3 */
 	BSP_LED_Init(LED_GREEN);
@@ -93,7 +100,7 @@ int main(void)
   *            APB1 Prescaler                 = 4
   *            APB2 Prescaler                 = 2
   *            HSE Frequency(Hz)              = 25000000
-  *            PLL_M                          = 25
+  *            PLL_M                          = 8 (OVERRIDE from 25)
   *            PLL_N                          = 432
   *            PLL_P                          = 2
   *            PLL_Q                          = 9
@@ -123,7 +130,7 @@ static void SystemClock_Config(void)
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 25;
+  RCC_OscInitStruct.PLL.PLLM = 8;		// Override crystal -- set for PLLM = 25 but changed to 8
   RCC_OscInitStruct.PLL.PLLN = 432;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 9;

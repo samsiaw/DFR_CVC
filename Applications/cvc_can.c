@@ -418,9 +418,9 @@ static void CAN_Config(void)
 	CanHandle.Init.TransmitFifoPriority = DISABLE;
 	CanHandle.Init.Mode = CAN_MODE_NORMAL;
 	CanHandle.Init.SyncJumpWidth = CAN_SJW_1TQ;
-	CanHandle.Init.TimeSeg1 = CAN_BS1_10TQ;
-	CanHandle.Init.TimeSeg2 = CAN_BS2_1TQ;
-	CanHandle.Init.Prescaler = 3;
+	CanHandle.Init.TimeSeg1 = CAN_BS1_14TQ;
+	CanHandle.Init.TimeSeg2 = CAN_BS2_3TQ;
+	CanHandle.Init.Prescaler = 6;
 
 	if (HAL_CAN_Init(&CanHandle) != HAL_OK)
 	{
@@ -531,16 +531,16 @@ void HAL_CAN_MspInit(CAN_HandleTypeDef *hcan)
   /* CAN1 TX GPIO pin configuration */
   GPIO_InitStruct.Pin = CANx_TX_PIN;
   GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Alternate =  CANx_TX_AF;
 
   HAL_GPIO_Init(CANx_TX_GPIO_PORT, &GPIO_InitStruct);
 
   /* CAN1 RX GPIO pin configuration */
   GPIO_InitStruct.Pin = CANx_RX_PIN;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Alternate =  CANx_RX_AF;
 
