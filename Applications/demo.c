@@ -15,6 +15,8 @@ void demoTask(void * parameters)	{
 
 	/* Initialize board LED */
 	BSP_LED_Init(LED_BLUE);
+	BSP_LED_Init(LED_RED);
+	BSP_LED_Init(LED_GREEN);
 
 	for( ;; )
 	{
@@ -22,6 +24,9 @@ void demoTask(void * parameters)	{
 		vTaskDelay((TickType_t) 1000/portTICK_PERIOD_MS);
 
 		BSP_LED_Toggle(LED_BLUE);
+		BSP_LED_Toggle(LED_RED);
+		BSP_LED_Toggle(LED_GREEN);
+
 	}
 }
 
