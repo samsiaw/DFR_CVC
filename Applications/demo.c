@@ -16,7 +16,7 @@ void demoTask(void * parameters)	{
 	/* Initialize board LED */
 	BSP_LED_Init(LED_BLUE);
 	BSP_LED_Init(LED_RED);
-	BSP_LED_Init(LED_GREEN);
+//	BSP_LED_Init(LED_GREEN);
 
 	for( ;; )
 	{
@@ -25,7 +25,7 @@ void demoTask(void * parameters)	{
 
 		BSP_LED_Toggle(LED_BLUE);
 		BSP_LED_Toggle(LED_RED);
-		BSP_LED_Toggle(LED_GREEN);
+//		BSP_LED_Toggle(LED_GREEN);
 
 	}
 }
