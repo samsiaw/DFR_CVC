@@ -27,12 +27,27 @@
 #define MIN_BATTERY_VOLTAGE_THRESHOLD	240 // 240 V minimum for battery to pre-charge
 #define MAX_BAMO_BUS_VOLTAGE_THRESHOLD	20	// 20 V maximum for bamocar to pre-charge
 
+
+#define TEMPERATURE_THRESHOLD 90 // Wrong value
+#define HI 1; //For state pins (error, warn and 2nd Airs pins)
+#define LO 0;
+#define CLOSE 1;
+#define OPEN 0;
 /* Type Defines ------------------------------------------------------------------------*/
 typedef enum cvc_state_e
 {
 
 	PRECHARGE = 0,
 	DRIVE = 1,
+	VOLTAGE_CHECK,
+	CVC_ERROR,
+	CVC_WARN,
+	PRECHARGE_WAIT,
+	RTD,
+	BUZZER,
+	CHARGING,
+	CHARGE_ERROR,
+	CHARGE_DONE //may not necessarily need to be defined as a state
 
 } cvc_state_t;
 
@@ -57,6 +72,7 @@ typedef enum cvc_error_code_e
 	LOGGING_ERR = 5,
 	TPS_ERR = 6,
 } cvc_error_code_t;
+
 
 /* Variables to Export ------------------------------------------------------------------------*/
 extern volatile cvc_state_t cvc_state;
