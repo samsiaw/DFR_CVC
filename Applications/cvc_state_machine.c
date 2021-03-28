@@ -47,17 +47,7 @@ static uint8_t second_Airs_pin = OPEN;
 
 #define true 1;
 #define false 0;
-/* Vars to set:
- *
- * Already set:
- * Airs Power on/ off
- * Charge enabled
- * buzzer_timer
- * bus voltage/ power amt
- * Temperature
- * RTD
- *
- */
+
 static uint8_t airs_power = LO; // Confirm initial state from ben
 static uint8_t charge_enabled = LO;
 
@@ -80,7 +70,7 @@ void state_machine()
 		xSemaphoreGive(CAN_Inputs_Vector_Mutex);
 
 		/* wait for 90% precharge */
-		if (bus_voltage >= pack_voltage * 0.95f) //changed to 95%
+		if (bus_voltage >= pack_voltage * 0.95f) //changed to 95% (from 90%)
 		{
 			precharge_90p_voltage = 1;
 		}
@@ -131,7 +121,7 @@ void state_machine()
 		bus_voltage = (float) ((int)CAN_inputs[DC_BUS_VOLTAGE])/10.0;
 
 		/* check for open Tractive System Master Switch */
-		if (bus_voltage <= 0.95 * pack_voltage) //changed to 0.95
+		if (bus_voltage <= 0.95 * pack_voltage) //changed to 0.95 (from 0.9)
 		{
 			cvc_state = PRECHARGE;
 		}
